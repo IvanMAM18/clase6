@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas</title>
+    <style type="text/css">
+        canvas{
+            background-color: rgb(138,138,209); 
+            border-radius: 10px;
+            border-color: rgb(1, 1, 12);
+        }
+    </style>
+</head>
+<body>
+    <canvas id="myCanvas" width="500" height="500">
+        Hola en navegador
+    <canvas>
+</body>
+</html>
+<script type="text/javascript">
+    var canvas = null;
+    var contexto = null;
+    var figura = 'arc';
+    var playerUno = null;
+    var playerDos=null;
+    var direccion="derecha";
+    var score=0;
+    var speed=5;
+    var pause=false;
+    const pared =[];
+    var tiburon = new Image();
+    var moneda = new Image();
+    var sonidoUno = new Audio();
+       //movimientos de teclado
+    document.addEventListener('keydown',function(e){
+        if(e.keyCode == 87 || e.keyCode ==38){
+            direccion="up";
+        }
+        if(e.keyCode == 83 || e.keyCode ==40){
+           direccion="down";
+        }
+        if(e.keyCode == 65 || e.keyCode ==37){
+           direccion="left";
+        }
+        if(e.keyCode == 68 || e.keyCode ==39){
+           direccion="right";
+        }
+        if(e.keyCode == 32){
+            pause =(pause)?false:true;
+
+        }
+        console.log(direccion);
+
+    })
+
+    function run(){
+        canvas = document.getElementById('myCanvas');
+        contexto = canvas.getContext('2d');
+        playerUno = new Cuadro(200,200,20,20,"red");
+        playerDos = new Cuadro(100,100,20,20,"blue");
+        pared.push (new Cuadro(50,130,30,200,"gray"));
+        pared.push (new Cuadro(100,60,280,30,"gray"));
+        pared.push (new Cuadro(380,130,30,200,"gray"));
+        pared.push (new Cuadro(100,360,280,30,"gray"));
+        tiburon.src ='tiburon.png';
+        moneda.src='moneda.png';
+        sonidoUno.src='sonido.mp3';
+        paint();
+    }
+    
+    function paint(){
+        window.requestAnimationFrame(paint);
+        contexto.fillStyle = "rgb(0,0,128,0.5)";
+        contexto.fillRect(0,0,500,500);
+        //Movimiento trabajo 21
+        //playerUno.x +=5;
+        //if(playerUno.x>500){
+            // playerUno.x=0;
+            //}
+        contexto.fillStyle="white";
+        contexto.font = "20px Arial";
+        contexto.fillText("Speed: "+speed+" - Score: "+score, 20,20);
+        contexto.drawImage(tiburon,playerUno.x,playerUno.y);
+            //playerUno.paint(contexto);
+        contexto.drawImage(moneda,playerDos.x,playerDos.y);
+        //playerDos.paint(contexto);
+
+        contexto
+
+        pared[0].paint(contexto);
+        pared[1].paint(contexto);
+        pared[2].paint(contexto);
+        pared[3].paint(contexto);
+        if(pause){
+            contexto.fillStyle="rgb(0,0,0,0.5)";
+            contexto.fillRect(0,0,500,500);
+
+            contexto.fillStyle="white";
+            contexto.fillText('P A U S E',200,250);
+        }
+        else{
+
+            update();
+        }
+    }
+    function update(){
+        
+        if(direccion=="up"){
+            playerUno.y-=speed;
+            if(playerUno.y<0){
+                playerUno.y=500;
+            }
+        }
+        if(direccion=="down"){
+           playerUno.y+=speed;
+           if(playerUno.y>500){
+                playerUno.y=0;
+            }
+        }
+        if(direccion=="left"){
+           playerUno.x-=speed;
+           if(playerUno.x<0){
+                playerUno.x=300;
+            }
+        }
+        if(direccion=="right"){
+           playerUno.x+=speed;
+           if(playerUno.x>500){
+                playerUno.x=0;
+            }
+        }
+
+        if (playerUno.se_tocan(playerDos)) {
+            playerDos.x=getRandomIntInclusive(10,300);
+            playerDos.y=getRandomIntInclusive(10,300);
+            sonidoUno.play();
+            speed += 5;
+            score += 5;
+        }
+        for(var i=0; i<pared.length; i++){
+            if(playerUno.se_tocan(pared[i])){
+                if(direccion=="up"){
+                    playerUno.y+=speed;
+                }
+                if(direccion=="down"){
+                    playerUno.y-=speed;
+                }
+                if(direccion=="left"){
+                    playerUno.x+=speed;
+                }
+                if(direccion=="right"){
+                    playerUno.x-=speed;
+                }
+    
+            }        
+        }
+    }
+
+    function Cuadro(x,y,w,h,c){
+        this.x=x;
+        this.y=y;
+        this.w = w;
+        this.h=h;
+        this.c=c;
+
+        this.se_tocan = function (target) { 
+
+            if(this.x < target.x + target.w &&
+
+            this.x + this.w > target.x && 
+
+            this.y < target.y + target.h && 
+
+            this.y + this.h > target.y)
+
+            {
+
+            return true;	 
+
+            }  
+        };
+
+        this.paint = function(contexto){
+            contexto.fillStyle = this.c;
+            contexto.fillRect(this.x,this.y,this.w,this.h);
+            contexto.strokeRect(this.x,this.y,this.w,this.h);
+        }
+    }
+
+    
+    window.requestAnimationFrame = (function () {
+        return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        function (callback) {
+            window.setTimeout(callback, 17);
+        };
+    }());
+
+    window.addEventListener('load',run,false);
+    
+    function getRandomIntInclusive(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+</script>
